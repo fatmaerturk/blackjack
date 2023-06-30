@@ -92,7 +92,7 @@ const showNotice = (text) => {
   let playerValue = calcHandValue(playerHand);
   let dealerValue = calcHandValue(dealerHand);
 
-  const result = connectREST(playerName, playerValue, dealerValue, round);
+  const result = saveScores(playerName, playerValue, dealerValue, round);
   if (result) {
     console.log("Save to DB.JSON");
   
@@ -102,7 +102,7 @@ const showNotice = (text) => {
    
 };
 
-async function connectREST(playerName, playerScore, dealerScore, round) {
+async function saveScores(playerName, playerScore, dealerScore, round) {
   try {
     const response = await fetch("http://localhost:3000/scores", {
       method: "POST",
@@ -161,7 +161,8 @@ ${playerValue > dealerValue ? "<em>You win!</em>" : "<em>Dealer Wins!</em>"}
 };
 
 const hitDealer = async (event) => {
-  
+  event.preventDefault();
+  event.stopImmediatePropagation()
   const hiddenCard = dealer.children[0];
   hiddenCard.classList.remove("back");
   hiddenCard.innerHTML = dealerHand[0];
@@ -172,7 +173,7 @@ const hitDealer = async (event) => {
   dealer.append(newCard);
   let handValue = await calcHandValue(dealerHand);
   if (handValue <= 16) {
-    hitDealer();
+    hitDealer(event);
   } else if (handValue === 21) {
     showNotice("Dealer has 21! Dealer wins!");
   } else if (handValue > 21) {
@@ -180,9 +181,8 @@ const hitDealer = async (event) => {
   } else {
     determineWinner();
   }
+
   
-  event.preventDefault();
- 
 };
 
 const hitPlayer = async () => {
@@ -212,9 +212,7 @@ const clearHands = () => {
 };
 
 const gameRunner = async (playerName, delay) => {
-    console.log(allDecks.length );
-  if (allDecks.length < 10)  getAllScores();
- //if (allDecks.length < 10)  shuffleDecks();
+     if (allDecks.length < 10)  getAllScores();
     clearHands();
 
     const { dealerHand, playerHand } = await dealHands();
@@ -240,7 +238,7 @@ const gameRunner = async (playerName, delay) => {
 };
 
 hit.addEventListener("click", hitPlayer);
-stay.addEventListener("click", hitDealer, false);
+stay.addEventListener("click", hitDealer, true);
 
 //create 6 decks
 shuffleDecks(6);
